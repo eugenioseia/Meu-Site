@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Audio AI Pro</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  color: white;
+  text-align: center;
+  background: linear-gradient(270deg, #000000, #0f2027, #203a43);
+  background-size: 600% 600%;
+  animation: bg 10s ease infinite;
+}
+
+@keyframes bg {
+  0% {background-position:0% 50%}
+  50% {background-position:100% 50%}
+  100% {background-position:0% 50%}
+}
+
+.container {
+  background: rgba(0,0,0,0.8);
+  padding: 40px;
+  border-radius: 15px;
+  width: 340px;
+  margin: auto;
+  margin-top: 80px;
+  box-shadow: 0 0 20px rgba(0,255,200,0.3);
+}
+
+button {
+  padding: 12px;
+  border: none;
+  background: #00ffcc;
+  cursor: pointer;
+  width: 100%;
+  font-size: 16px;
+  border-radius: 8px;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #00ccaa;
+}
+
+button:disabled {
+  background: gray;
+}
+
+input {
+  padding: 10px;
+  width: 100%;
+  border-radius: 6px;
+  border: none;
+}
+
+pre {
+  text-align: left;
+  white-space: pre-wrap;
+  background: rgba(255,255,255,0.05);
+  padding: 10px;
+  border-radius: 6px;
+}
+
+#status {
+  margin-top: 10px;
+  color: #00ffcc;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>🎤 Audio AI</h1>
+
+  <input type="file" id="audioFile" />
+  <br><br>
+
+  <button id="btnTranscrever" onclick="transcrever()">Transcrever</button>
+  <br><br>
+
+  <button onclick="resumir()">Resumir Texto</button>
+
+  <div id="status"></div>
+
+  <h3>Resultado:</h3>
+  <pre id="resultado"></pre>
+</div>
+
+<script>
+async function transcrever() {
+  const file = document.getElementById("audioFile").files[0];
+  const status = document.getElementById("status");
+  const btn = document.getElementById("btnTranscrever");
+
+  if (!file) {
+    alert("Selecione um áudio!");
+    return;
+  }
+
+  btn.disabled = true;
+  status.innerText = "⏳ Processando áudio...";
+
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("model", "whisper-1");
+
+    const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer SUA_API_KEY_AQUI"
+      },
+      body: formData
+    });
+
+    const data = await response.json();
+    document.getElementById("resultado").innerText = data.text;
+
+    status.innerText = "✅ Transcrição pronta!";
+  } catch (e) {
+    status.innerText = "❌ Erro ao processar";
+  }
+
+  btn.disabled = false;
+}
+
+async function resumir() {
+  const texto = document.getElementById("resultado").innerText;
+
+  if (!texto) {
+    alert("Nenhum texto ainda!");
+    return;
+  }
+
+  alert("⏳ Gerando resumo...");
+
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer SUA_API_KEY_AQUI",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "user", content: "Resuma esse texto: " + texto }
+      ]
+    })
+  });
+
+  const data = await response.json();
+  alert(data.choices[0].message.content);
+}
+</script>
+
+</body>
+</html>
