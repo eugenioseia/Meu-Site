@@ -6,9 +6,7 @@
 <title>Audio AI Pro</title>
 
 <style>
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -16,40 +14,37 @@ body {
   color: white;
   min-height: 100vh;
   background:
-    linear-gradient(rgba(0,0,0,0.70), rgba(0,0,0,0.88)),
+    linear-gradient(rgba(0,0,0,0.72), rgba(0,0,0,0.9)),
     url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80")
     center/cover no-repeat;
 }
 
-/* LOGIN */
 #login {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
 }
 
 .login-card {
   width: 340px;
   padding: 30px;
   border-radius: 24px;
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0,0,0,0.68);
   backdrop-filter: blur(14px);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
   text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
 }
 
 .logo {
   font-size: 32px;
   font-weight: bold;
-  margin-bottom: 8px;
 }
 
 .subtitle {
   font-size: 14px;
   opacity: 0.8;
-  margin-bottom: 25px;
+  margin: 10px 0 25px;
 }
 
 input {
@@ -71,41 +66,27 @@ button {
   color: #001;
   font-weight: bold;
   cursor: pointer;
-  transition: 0.2s;
 }
 
-button:hover {
-  transform: scale(1.02);
-}
-
-/* APP */
-#app {
-  display: none;
-}
+#app { display: none; }
 
 .container {
-  min-height: 100vh;
-  padding: 25px;
   display: flex;
   gap: 25px;
+  min-height: 100vh;
+  padding: 25px;
 }
 
 .left, .right {
   border-radius: 24px;
   padding: 25px;
-  background: rgba(0,0,0,0.62);
+  background: rgba(0,0,0,0.64);
   backdrop-filter: blur(14px);
   box-shadow: 0 20px 50px rgba(0,0,0,0.45);
 }
 
-.left {
-  width: 35%;
-}
-
-.right {
-  width: 65%;
-  overflow-y: auto;
-}
+.left { width: 35%; }
+.right { width: 65%; overflow-y: auto; }
 
 .box {
   background: rgba(255,255,255,0.10);
@@ -114,9 +95,7 @@ button:hover {
   margin-bottom: 18px;
 }
 
-h2, h3 {
-  margin-top: 0;
-}
+h2, h3 { margin-top: 0; }
 
 input[type="file"] {
   background: rgba(255,255,255,0.15);
@@ -131,6 +110,7 @@ audio {
 #resultado {
   line-height: 1.8;
   font-size: 18px;
+  white-space: pre-wrap;
 }
 
 .highlight {
@@ -150,8 +130,8 @@ audio {
   background: rgba(0,0,0,0.45);
   padding: 10px;
   border-radius: 10px;
-  word-break: break-all;
   color: #00ffcc;
+  word-break: break-all;
   margin-bottom: 10px;
 }
 
@@ -159,6 +139,11 @@ audio {
   font-size: 13px;
   opacity: 0.85;
   line-height: 1.5;
+}
+
+.status {
+  color: #00ffcc;
+  font-weight: bold;
 }
 
 @media (max-width: 800px) {
@@ -169,18 +154,12 @@ audio {
   .left, .right {
     width: 100%;
   }
-
-  .login-card {
-    width: 100%;
-    max-width: 360px;
-  }
 }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
 <div id="login">
   <div class="login-card">
     <div class="logo">🎧 Audio AI Pro</div>
@@ -193,7 +172,6 @@ audio {
   </div>
 </div>
 
-<!-- SITE -->
 <div id="app">
   <div class="container">
 
@@ -211,6 +189,10 @@ audio {
         <button onclick="transcrever()">Transcrever</button>
 
         <audio id="player" controls></audio>
+
+        <p class="warning">
+          Use áudio pequeno, de preferência até 4 MB. Música completa pode falhar no Vercel.
+        </p>
       </div>
 
       <div class="box">
@@ -221,8 +203,7 @@ audio {
         <button onclick="usarLink()">Usar link</button>
 
         <p class="warning">
-          YouTube e alguns sites não funcionam direto só com HTML.
-          Para isso funcionar 100%, precisa de um servidor/backend.
+          Link do YouTube ainda não baixa automaticamente. Por enquanto, envie o arquivo de áudio.
         </p>
       </div>
 
@@ -245,7 +226,7 @@ audio {
       <h2>📝 Letra</h2>
 
       <div id="resultado">
-        Envie um áudio e clique em transcrever.
+        Envie um áudio pequeno e clique em transcrever.
       </div>
     </div>
 
@@ -255,74 +236,67 @@ audio {
 <script>
 let textoGlobal = "";
 
-/*
-  IMPORTANTE:
-  Este código foi feito para SEMPRE mostrar o login primeiro.
-  Ele NÃO salva login automático no navegador.
-*/
 window.onload = function() {
   localStorage.removeItem("user");
-
   document.getElementById("login").style.display = "flex";
   document.getElementById("app").style.display = "none";
 };
 
-// ENTRAR
 function entrar() {
   const user = document.getElementById("user").value.trim();
   const pass = document.getElementById("pass").value.trim();
 
-  if (user === "" || pass === "") {
+  if (!user || !pass) {
     alert("Preencha usuário e senha!");
     return;
   }
 
   document.getElementById("nomeUsuario").textContent = user;
-
   document.getElementById("login").style.display = "none";
   document.getElementById("app").style.display = "block";
 }
 
-// SAIR
 function sair() {
   document.getElementById("user").value = "";
   document.getElementById("pass").value = "";
-
   document.getElementById("login").style.display = "flex";
   document.getElementById("app").style.display = "none";
 }
 
-// TRANSCRIÇÃO
 async function transcrever() {
   const file = document.getElementById("audioFile").files[0];
+  const resultado = document.getElementById("resultado");
 
   if (!file) {
     alert("Selecione um áudio!");
     return;
   }
 
+  if (file.size > 4 * 1024 * 1024) {
+    alert("Arquivo grande demais. Use um áudio menor que 4 MB.");
+    resultado.innerHTML = "❌ Arquivo grande demais. Use um áudio menor que 4 MB.";
+    return;
+  }
+
   document.getElementById("player").src = URL.createObjectURL(file);
-  document.getElementById("resultado").innerHTML = "⏳ Transcrevendo... aguarde.";
+  resultado.innerHTML = "⏳ Transcrevendo... aguarde.";
 
   const formData = new FormData();
   formData.append("file", file);
   formData.append("model", "whisper-1");
 
   try {
-    const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+    const response = await fetch("/api/transcrever", {
       method: "POST",
-      headers: {
-        "Authorization": "Bearer SUA_API_KEY_AQUI"
-      },
       body: formData
     });
 
     const data = await response.json();
 
-    if (!data.text) {
-      alert("Erro na transcrição!");
+    if (!response.ok || !data.text) {
       console.log(data);
-      document.getElementById("resultado").innerHTML = "Erro na transcrição.";
+      alert("Erro: " + (data.error?.message || data.erro || data.detalhe || "Não foi possível transcrever."));
+      resultado.innerHTML = "❌ Erro na transcrição. Tente um áudio menor ou verifique sua API Key no Vercel.";
       return;
     }
 
@@ -330,13 +304,12 @@ async function transcrever() {
     mostrarTexto();
 
   } catch (err) {
-    alert("Erro na API");
     console.error(err);
-    document.getElementById("resultado").innerHTML = "Erro ao conectar com a API.";
+    alert("Erro ao conectar com a API.");
+    resultado.innerHTML = "❌ Erro ao conectar com a API.";
   }
 }
 
-// MOSTRAR TEXTO
 function mostrarTexto() {
   const palavras = textoGlobal.split(" ");
   let html = "";
@@ -348,23 +321,19 @@ function mostrarTexto() {
   document.getElementById("resultado").innerHTML = html;
 }
 
-// KARAOKE SIMPLES
 document.getElementById("player").addEventListener("timeupdate", function() {
   const spans = document.querySelectorAll("#resultado span");
   const tempo = document.getElementById("player").currentTime;
-
   const index = Math.floor(tempo * 2);
 
   spans.forEach((span, i) => {
     span.classList.remove("highlight");
-
     if (i === index) {
       span.classList.add("highlight");
     }
   });
 });
 
-// COPIAR PIX
 function copiarPix() {
   const pix = document.getElementById("pixCode").textContent.trim();
 
@@ -373,23 +342,21 @@ function copiarPix() {
   });
 }
 
-// LINK DE MÚSICA
 function usarLink() {
   const link = document.getElementById("musicLink").value.trim();
 
-  if (link === "") {
+  if (!link) {
     alert("Cole um link primeiro!");
     return;
   }
 
   document.getElementById("resultado").innerHTML = `
-    <p>🔗 Link recebido:</p>
-    <p>${link}</p>
-    <br>
-    <p>
-      Para puxar áudio direto do YouTube, precisa de backend.
-      Só com HTML no GitHub Pages não é possível baixar a música automaticamente.
-    </p>
+🔗 Link recebido:
+
+${link}
+
+⚠️ Por enquanto, o site não consegue baixar áudio do YouTube automaticamente.
+Para funcionar, envie o arquivo MP3 pelo botão de upload.
   `;
 }
 </script>
