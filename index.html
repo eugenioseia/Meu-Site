@@ -2,28 +2,91 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Audio AI Pro</title>
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial;
-  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-  color: white;
+* {
+  box-sizing: border-box;
 }
 
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: white;
+  min-height: 100vh;
+  background:
+    linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.8)),
+    url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80")
+    center/cover no-repeat;
+}
+
+/* LOGIN */
+#login {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-card {
+  width: 330px;
+  padding: 28px;
+  border-radius: 22px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  text-align: center;
+}
+
+.login-card h2 {
+  margin-bottom: 20px;
+}
+
+input {
+  width: 100%;
+  padding: 13px;
+  margin-bottom: 12px;
+  border: none;
+  border-radius: 12px;
+  outline: none;
+  font-size: 14px;
+}
+
+button {
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #00ffcc, #00aaff);
+  color: #001;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  transform: scale(1.02);
+}
+
+/* APP */
 .container {
   display: flex;
-  height: 100vh;
+  min-height: 100vh;
+  padding: 25px;
+  gap: 25px;
 }
 
 .left, .right {
-  padding: 20px;
+  border-radius: 24px;
+  padding: 25px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.45);
 }
 
 .left {
   width: 35%;
-  background: rgba(0,0,0,0.8);
 }
 
 .right {
@@ -31,23 +94,72 @@ body {
   overflow-y: auto;
 }
 
-button {
-  padding: 10px;
-  background: #00ffcc;
-  border: none;
-  width: 100%;
-  cursor: pointer;
+h2 {
+  margin-top: 0;
 }
 
-input {
+input[type="file"] {
+  background: rgba(255,255,255,0.15);
+  color: white;
+}
+
+audio {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
+  margin-top: 20px;
+}
+
+#resultado {
+  line-height: 1.8;
+  font-size: 18px;
 }
 
 .highlight {
   color: #00ffcc;
   font-weight: bold;
+  background: rgba(0,255,204,0.15);
+  border-radius: 6px;
+  padding: 2px 4px;
+}
+
+.logo {
+  font-size: 34px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  font-size: 14px;
+  opacity: 0.8;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.user-bar {
+  margin-bottom: 20px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.logout {
+  margin-top: 15px;
+  background: rgba(255,255,255,0.15);
+  color: white;
+}
+
+/* CELULAR */
+@media (max-width: 800px) {
+  .container {
+    flex-direction: column;
+  }
+
+  .left, .right {
+    width: 100%;
+  }
+
+  .login-card {
+    width: 90%;
+  }
 }
 </style>
 </head>
@@ -56,27 +168,41 @@ input {
 
 <!-- LOGIN -->
 <div id="login">
-  <h2>🔐 Criar Conta / Login</h2>
-  <input id="user" placeholder="Usuário">
-  <input id="pass" type="password" placeholder="Senha">
-  <button onclick="login()">Entrar</button>
+  <div class="login-card">
+    <div class="logo">🎧 Audio AI Pro</div>
+    <div class="subtitle">Entre para transcrever suas músicas</div>
+
+    <input id="user" placeholder="Usuário ou e-mail">
+    <input id="pass" type="password" placeholder="Senha">
+
+    <button onclick="login()">Entrar</button>
+  </div>
 </div>
 
 <!-- APP -->
 <div class="container" id="app" style="display:none;">
 
   <div class="left">
-    <h2>🎤 Upload</h2>
-    <input type="file" id="audioFile" accept="audio/*"><br><br>
+    <div class="user-bar">
+      Logado como: <span id="nomeUsuario"></span>
+    </div>
 
-    <button onclick="transcrever()">Transcrever</button><br><br>
+    <h2>🎤 Upload</h2>
+
+    <input type="file" id="audioFile" accept="audio/*">
+
+    <button onclick="transcrever()">Transcrever</button>
 
     <audio id="player" controls></audio>
+
+    <button class="logout" onclick="sair()">Sair</button>
   </div>
 
   <div class="right">
     <h2>📝 Letra</h2>
-    <div id="resultado"></div>
+    <div id="resultado">
+      Envie um áudio e clique em transcrever.
+    </div>
   </div>
 
 </div>
@@ -84,13 +210,13 @@ input {
 <script>
 let textoGlobal = "";
 
-// LOGIN SIMPLES (local)
+// LOGIN SIMPLES
 function login() {
-  const user = document.getElementById("user").value;
-  const pass = document.getElementById("pass").value;
+  const user = document.getElementById("user").value.trim();
+  const pass = document.getElementById("pass").value.trim();
 
   if (!user || !pass) {
-    alert("Preencha tudo!");
+    alert("Preencha usuário e senha!");
     return;
   }
 
@@ -98,7 +224,26 @@ function login() {
 
   document.getElementById("login").style.display = "none";
   document.getElementById("app").style.display = "flex";
+  document.getElementById("nomeUsuario").textContent = user;
 }
+
+// SAIR
+function sair() {
+  localStorage.removeItem("user");
+  document.getElementById("login").style.display = "flex";
+  document.getElementById("app").style.display = "none";
+}
+
+// MANTER LOGADO
+window.onload = function() {
+  const user = localStorage.getItem("user");
+
+  if (user) {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("app").style.display = "flex";
+    document.getElementById("nomeUsuario").textContent = user;
+  }
+};
 
 // TRANSCRIÇÃO
 async function transcrever() {
@@ -110,6 +255,7 @@ async function transcrever() {
   }
 
   document.getElementById("player").src = URL.createObjectURL(file);
+  document.getElementById("resultado").innerHTML = "⏳ Transcrevendo... aguarde.";
 
   const formData = new FormData();
   formData.append("file", file);
@@ -129,6 +275,7 @@ async function transcrever() {
     if (!data.text) {
       alert("Erro na transcrição!");
       console.log(data);
+      document.getElementById("resultado").innerHTML = "Erro na transcrição.";
       return;
     }
 
@@ -138,6 +285,7 @@ async function transcrever() {
   } catch (err) {
     alert("Erro na API");
     console.error(err);
+    document.getElementById("resultado").innerHTML = "Erro ao conectar com a API.";
   }
 }
 
@@ -162,6 +310,7 @@ document.getElementById("player").addEventListener("timeupdate", () => {
 
   spans.forEach((s, i) => {
     s.classList.remove("highlight");
+
     if (i === index) {
       s.classList.add("highlight");
     }
