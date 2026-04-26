@@ -16,12 +16,11 @@ body {
   color: white;
   min-height: 100vh;
   background:
-    linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.8)),
+    linear-gradient(rgba(0,0,0,0.70), rgba(0,0,0,0.85)),
     url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80")
     center/cover no-repeat;
 }
 
-/* LOGIN */
 #login {
   min-height: 100vh;
   display: flex;
@@ -30,17 +29,25 @@ body {
 }
 
 .login-card {
-  width: 330px;
-  padding: 28px;
+  width: 340px;
+  padding: 30px;
   border-radius: 22px;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(14px);
-  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.60);
+  backdrop-filter: blur(15px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
   text-align: center;
 }
 
-.login-card h2 {
-  margin-bottom: 20px;
+.logo {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 14px;
+  opacity: 0.8;
+  margin-bottom: 25px;
 }
 
 input {
@@ -69,9 +76,8 @@ button:hover {
   transform: scale(1.02);
 }
 
-/* APP */
 .container {
-  display: flex;
+  display: none;
   min-height: 100vh;
   padding: 25px;
   gap: 25px;
@@ -80,7 +86,7 @@ button:hover {
 .left, .right {
   border-radius: 24px;
   padding: 25px;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0,0,0,0.58);
   backdrop-filter: blur(14px);
   box-shadow: 0 20px 50px rgba(0,0,0,0.45);
 }
@@ -94,8 +100,15 @@ button:hover {
   overflow-y: auto;
 }
 
-h2 {
+h2, h3 {
   margin-top: 0;
+}
+
+.box {
+  background: rgba(255,255,255,0.10);
+  padding: 15px;
+  border-radius: 16px;
+  margin-bottom: 18px;
 }
 
 input[type="file"] {
@@ -105,7 +118,7 @@ input[type="file"] {
 
 audio {
   width: 100%;
-  margin-top: 20px;
+  margin-top: 15px;
 }
 
 #resultado {
@@ -121,33 +134,32 @@ audio {
   padding: 2px 4px;
 }
 
-.logo {
-  font-size: 34px;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 5px;
-}
-
-.subtitle {
-  font-size: 14px;
-  opacity: 0.8;
-  text-align: center;
-  margin-bottom: 25px;
-}
-
-.user-bar {
-  margin-bottom: 20px;
-  font-size: 14px;
-  opacity: 0.9;
-}
-
 .logout {
-  margin-top: 15px;
   background: rgba(255,255,255,0.15);
   color: white;
+  margin-top: 10px;
 }
 
-/* CELULAR */
+.pix {
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.pix-code {
+  background: rgba(0,0,0,0.45);
+  padding: 10px;
+  border-radius: 10px;
+  word-break: break-all;
+  margin-top: 8px;
+  color: #00ffcc;
+}
+
+.warning {
+  font-size: 13px;
+  opacity: 0.85;
+  line-height: 1.5;
+}
+
 @media (max-width: 800px) {
   .container {
     flex-direction: column;
@@ -180,22 +192,52 @@ audio {
 </div>
 
 <!-- APP -->
-<div class="container" id="app" style="display:none;">
+<div class="container" id="app">
 
   <div class="left">
-    <div class="user-bar">
-      Logado como: <span id="nomeUsuario"></span>
+
+    <div class="box">
+      Logado como: <strong id="nomeUsuario"></strong>
     </div>
 
-    <h2>🎤 Upload</h2>
+    <div class="box">
+      <h2>🎤 Upload</h2>
 
-    <input type="file" id="audioFile" accept="audio/*">
+      <input type="file" id="audioFile" accept="audio/*">
 
-    <button onclick="transcrever()">Transcrever</button>
+      <button onclick="transcrever()">Transcrever</button>
 
-    <audio id="player" controls></audio>
+      <audio id="player" controls></audio>
+    </div>
+
+    <div class="box">
+      <h3>🔗 Link da música</h3>
+
+      <input id="musicLink" placeholder="Cole aqui o link da música">
+
+      <button onclick="usarLink()">Usar link</button>
+
+      <p class="warning">
+        Aviso: YouTube não funciona direto só com HTML por causa de bloqueios do navegador.
+        Para isso funcionar de verdade, você vai precisar de um servidor/backend.
+      </p>
+    </div>
+
+    <div class="box pix">
+      <h3>💚 Doações</h3>
+      <p>Ajude a melhorar o site com qualquer valor pelo PIX:</p>
+
+      <div class="pix-code" id="pixCode">
+        COLOQUE_SUA_CHAVE_PIX_AQUI
+      </div>
+
+      <br>
+
+      <button onclick="copiarPix()">Copiar PIX</button>
+    </div>
 
     <button class="logout" onclick="sair()">Sair</button>
+
   </div>
 
   <div class="right">
@@ -210,7 +252,7 @@ audio {
 <script>
 let textoGlobal = "";
 
-// LOGIN SIMPLES
+// LOGIN
 function login() {
   const user = document.getElementById("user").value.trim();
   const pass = document.getElementById("pass").value.trim();
@@ -232,6 +274,9 @@ function sair() {
   localStorage.removeItem("user");
   document.getElementById("login").style.display = "flex";
   document.getElementById("app").style.display = "none";
+
+  document.getElementById("user").value = "";
+  document.getElementById("pass").value = "";
 }
 
 // MANTER LOGADO
@@ -242,6 +287,9 @@ window.onload = function() {
     document.getElementById("login").style.display = "none";
     document.getElementById("app").style.display = "flex";
     document.getElementById("nomeUsuario").textContent = user;
+  } else {
+    document.getElementById("login").style.display = "flex";
+    document.getElementById("app").style.display = "none";
   }
 };
 
@@ -316,6 +364,35 @@ document.getElementById("player").addEventListener("timeupdate", () => {
     }
   });
 });
+
+// COPIAR PIX
+function copiarPix() {
+  const pix = document.getElementById("pixCode").textContent.trim();
+
+  navigator.clipboard.writeText(pix).then(() => {
+    alert("PIX copiado!");
+  });
+}
+
+// LINK DE MÚSICA
+function usarLink() {
+  const link = document.getElementById("musicLink").value.trim();
+
+  if (!link) {
+    alert("Cole um link primeiro!");
+    return;
+  }
+
+  document.getElementById("resultado").innerHTML = `
+    <p>🔗 Link recebido:</p>
+    <p>${link}</p>
+    <br>
+    <p>
+      Para puxar áudio direto do YouTube ou de outros sites, este projeto precisa de um backend.
+      Só com HTML, CSS e JavaScript no navegador não dá para baixar e transcrever automaticamente.
+    </p>
+  `;
+}
 </script>
 
 </body>
