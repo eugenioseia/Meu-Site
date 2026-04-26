@@ -8,7 +8,7 @@
 body {
   margin: 0;
   font-family: Arial;
-  background: #0f2027;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
   color: white;
 }
 
@@ -17,15 +17,17 @@ body {
   height: 100vh;
 }
 
-.left {
-  width: 40%;
+.left, .right {
   padding: 20px;
-  background: #111;
+}
+
+.left {
+  width: 35%;
+  background: rgba(0,0,0,0.8);
 }
 
 .right {
-  width: 60%;
-  padding: 20px;
+  width: 65%;
   overflow-y: auto;
 }
 
@@ -33,13 +35,14 @@ button {
   padding: 10px;
   background: #00ffcc;
   border: none;
-  cursor: pointer;
   width: 100%;
+  cursor: pointer;
 }
 
-pre {
-  font-size: 18px;
-  line-height: 1.6;
+input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
 }
 
 .highlight {
@@ -51,7 +54,16 @@ pre {
 
 <body>
 
-<div class="container">
+<!-- LOGIN -->
+<div id="login">
+  <h2>🔐 Criar Conta / Login</h2>
+  <input id="user" placeholder="Usuário">
+  <input id="pass" type="password" placeholder="Senha">
+  <button onclick="login()">Entrar</button>
+</div>
+
+<!-- APP -->
+<div class="container" id="app" style="display:none;">
 
   <div class="left">
     <h2>🎤 Upload</h2>
@@ -64,7 +76,7 @@ pre {
 
   <div class="right">
     <h2>📝 Letra</h2>
-    <pre id="resultado"></pre>
+    <div id="resultado"></div>
   </div>
 
 </div>
@@ -72,6 +84,23 @@ pre {
 <script>
 let textoGlobal = "";
 
+// LOGIN SIMPLES (local)
+function login() {
+  const user = document.getElementById("user").value;
+  const pass = document.getElementById("pass").value;
+
+  if (!user || !pass) {
+    alert("Preencha tudo!");
+    return;
+  }
+
+  localStorage.setItem("user", user);
+
+  document.getElementById("login").style.display = "none";
+  document.getElementById("app").style.display = "flex";
+}
+
+// TRANSCRIÇÃO
 async function transcrever() {
   const file = document.getElementById("audioFile").files[0];
 
@@ -80,28 +109,39 @@ async function transcrever() {
     return;
   }
 
-  // mostrar player
-  const url = URL.createObjectURL(file);
-  document.getElementById("player").src = url;
+  document.getElementById("player").src = URL.createObjectURL(file);
 
   const formData = new FormData();
   formData.append("file", file);
   formData.append("model", "whisper-1");
 
-  const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer SUA_API_KEY_AQUI"
-    },
-    body: formData
-  });
+  try {
+    const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer SUA_API_KEY_AQUI"
+      },
+      body: formData
+    });
 
-  const data = await response.json();
-  textoGlobal = data.text;
+    const data = await response.json();
 
-  mostrarTexto();
+    if (!data.text) {
+      alert("Erro na transcrição!");
+      console.log(data);
+      return;
+    }
+
+    textoGlobal = data.text;
+    mostrarTexto();
+
+  } catch (err) {
+    alert("Erro na API");
+    console.error(err);
+  }
 }
 
+// MOSTRAR TEXTO
 function mostrarTexto() {
   const palavras = textoGlobal.split(" ");
   let html = "";
@@ -113,12 +153,12 @@ function mostrarTexto() {
   document.getElementById("resultado").innerHTML = html;
 }
 
-// simulação de karaokê
+// KARAOKE SIMPLES
 document.getElementById("player").addEventListener("timeupdate", () => {
   const spans = document.querySelectorAll("#resultado span");
   const tempo = document.getElementById("player").currentTime;
 
-  const index = Math.floor(tempo * 2); // velocidade do destaque
+  const index = Math.floor(tempo * 2);
 
   spans.forEach((s, i) => {
     s.classList.remove("highlight");
